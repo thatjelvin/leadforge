@@ -27,3 +27,26 @@ def test_verify_invalid_email_keyword() -> None:
     response = client.post("/v1/verify", json={"email": "invalid.user@acme.com"})
     assert response.status_code == 200
     assert response.json()["status"] == "invalid"
+
+
+def test_verify_risky_short_local_part() -> None:
+    response = client.post("/v1/verify", json={"email": "ab@acme.com"})
+    assert response.status_code == 200
+    assert response.json()["status"] == "risky"
+    assert response.json()["confidence"] == 45
+
+
+def test_verify_verified_email() -> None:
+    response = client.post("/v1/verify", json={"email": "jane.doe@acme.com"})
+    assert response.status_code == 200
+    assert response.json()["status"] == "verified"
+    assert response.json()["confidence"] == 90
+
+
+def test_discover_empty_after_sanitization_returns_empty_results() -> None:
+    response = client.post(
+        "/v1/discover",
+        json={"first_name": "!!!", "last_name": "###", "domain": "acme.com"},
+    )
+    assert response.status_code == 200
+    assert response.json()["results"] == []

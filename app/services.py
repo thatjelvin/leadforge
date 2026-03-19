@@ -54,6 +54,8 @@ def generate_candidates(first_name: str, last_name: str, domain: str) -> list[Ca
 
 
 def verify_email(email: str) -> tuple[str, int]:
+    if "@" not in email:
+        return "invalid", 0
     local_part = email.split("@", 1)[0].lower()
     if "invalid" in local_part or "bounce" in local_part:
         return "invalid", 0

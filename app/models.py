@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -11,7 +13,7 @@ class EmailCandidate(BaseModel):
     email: EmailStr
     pattern: str
     confidence: int = Field(ge=0, le=100)
-    status: str
+    status: Literal["verified", "risky", "invalid"]
 
 
 class DiscoverResponse(BaseModel):
@@ -24,5 +26,5 @@ class VerifyRequest(BaseModel):
 
 class VerifyResponse(BaseModel):
     email: EmailStr
-    status: str
+    status: Literal["verified", "risky", "invalid"]
     confidence: int = Field(ge=0, le=100)
