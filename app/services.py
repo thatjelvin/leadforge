@@ -1,6 +1,13 @@
 import re
 from dataclasses import dataclass
 
+RISKY_THRESHOLD = 70
+VERIFIED_CONFIDENCE = 90
+RISKY_CONFIDENCE = 45
+INVALID_CONFIDENCE = 0
+# Ranked from strongest to weakest pattern likelihood for MVP defaults.
+DEFAULT_PATTERN_CONFIDENCE_SCORES = [90, 85, 75, 72, 68, 66, 64, 62, 50, 48]
+
 
 @dataclass(frozen=True)
 class Candidate:
@@ -40,25 +47,23 @@ def generate_candidates(first_name: str, last_name: str, domain: str) -> list[Ca
         ("lastname", f"{last}@{d}"),
         ("lastnameF", f"{last}{first[0]}@{d}"),
     ]
-    base_scores = [90, 85, 75, 72, 68, 66, 64, 62, 50, 48]
-
     return [
         Candidate(
             email=email,
             pattern=pattern,
             confidence=score,
-            status="risky" if score < 70 else "verified",
+            status="risky" if score < RISKY_THRESHOLD else "verified",
         )
-        for (pattern, email), score in zip(patterns, base_scores, strict=True)
+        for (pattern, email), score in zip(patterns, DEFAULT_PATTERN_CONFIDENCE_SCORES, strict=True)
     ]
 
 
 def verify_email(email: str) -> tuple[str, int]:
     if "@" not in email:
-        return "invalid", 0
+        return "invalid", INVALID_CONFIDENCE
     local_part = email.split("@", 1)[0].lower()
     if "invalid" in local_part or "bounce" in local_part:
-        return "invalid", 0
+        return "invalid", INVALID_CONFIDENCE
     if len(local_part) < 3:
-        return "risky", 45
-    return "verified", 90
+        return "risky", RISKY_CONFIDENCE
+    return "verified", VERIFIED_CONFIDENCE
